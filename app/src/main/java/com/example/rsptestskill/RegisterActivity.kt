@@ -4,8 +4,6 @@ import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.graphics.Bitmap
-import android.graphics.BitmapFactory
 import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.viewModels
@@ -102,7 +100,6 @@ class RegisterActivity : AppCompatActivity(){
                 .centerCrop()
                 .override(960, 1280)
                 .into(ivRegisterProfile)
-//            Log.d(TAG, "onresult Gallery ${data?.data}")
         }
         if(requestCode == Constants.REQ_CODE_102 && resultCode == Activity.RESULT_OK){
             val sharedPreference =  getSharedPreferences(Constants.CAMERA_PREFERENCE, Context.MODE_PRIVATE)
@@ -112,7 +109,6 @@ class RegisterActivity : AppCompatActivity(){
                 .centerCrop()
                 .override(960, 1280)
                 .into(ivRegisterProfile)
-//            Log.d(TAG, "onresult Camera ${sharedPreference.getString("image", null)}")
         }
     }
 }
