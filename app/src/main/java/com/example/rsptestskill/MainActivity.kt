@@ -13,23 +13,11 @@ import com.example.rsptestskill.room.LoginStory
 import com.example.rsptestskill.room.LoginStoryApplication
 import com.example.rsptestskill.room.LoginStoryViewModel
 import com.example.rsptestskill.room.LoginStoryViewModelFactory
+import com.example.rsptestskill.utils.Constants
 import com.google.android.gms.location.*
 import kotlinx.android.synthetic.main.activity_main.*
 
 
-
-private const val TAG = "MainActivity"
-// declare a global variable FusedLocationProviderClient
-private lateinit var fusedLocationClient: FusedLocationProviderClient
-
-// in onCreate() initialize FusedLocationProviderClient
-
-
-// globally declare LocationRequest
-private lateinit var locationRequest: LocationRequest
-
-// globally declare LocationCallback
-private lateinit var locationCallback: LocationCallback
 
 
 /**
@@ -38,6 +26,9 @@ private lateinit var locationCallback: LocationCallback
  */
 class   MainActivity : AppCompatActivity() {
 
+    private lateinit var fusedLocationClient: FusedLocationProviderClient
+    private lateinit var locationRequest: LocationRequest
+    private lateinit var locationCallback: LocationCallback
     private val loginStoryViewModel: LoginStoryViewModel by viewModels {
         LoginStoryViewModelFactory((application as LoginStoryApplication).repository)
     }
@@ -75,7 +66,7 @@ class   MainActivity : AppCompatActivity() {
                     Manifest.permission.ACCESS_FINE_LOCATION,
                     Manifest.permission.ACCESS_COARSE_LOCATION
                 ),
-                101
+                Constants.REQ_CODE_101
             )
         }
 //
@@ -146,7 +137,7 @@ class   MainActivity : AppCompatActivity() {
                     Manifest.permission.ACCESS_FINE_LOCATION,
                     Manifest.permission.ACCESS_COARSE_LOCATION
                 ),
-                101
+                Constants.REQ_CODE_101
             )
         }
         fusedLocationClient.requestLocationUpdates(

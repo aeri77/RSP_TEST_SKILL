@@ -1,27 +1,24 @@
 package com.example.rsptestskill
 
-import android.Manifest
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.graphics.Bitmap
 import android.graphics.BitmapFactory
-import android.os.Build
 import android.os.Bundle
-import android.os.Environment
-import android.provider.MediaStore
-import android.util.Log
 import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.content.FileProvider
+import androidx.core.net.toUri
+import com.bumptech.glide.Glide
 import com.example.rsptestskill.dialog.ProfilePhotoDialog
 import com.example.rsptestskill.room.LoginStory
 import com.example.rsptestskill.room.LoginStoryApplication
 import com.example.rsptestskill.room.LoginStoryViewModel
 import com.example.rsptestskill.room.LoginStoryViewModelFactory
+import com.example.rsptestskill.utils.Constants
 import kotlinx.android.synthetic.main.activity_register.*
-import java.io.File
 
 
 class RegisterActivity : AppCompatActivity(){
@@ -76,7 +73,7 @@ class RegisterActivity : AppCompatActivity(){
     private fun chooseImageGallery(){
         val intent = Intent(Intent.ACTION_PICK)
         intent.type = "image/*"
-        startActivityForResult(intent, 100)
+        startActivityForResult(intent, Constants.REQ_CODE_100)
     }
 
     override fun onRequestPermissionsResult(
@@ -86,7 +83,7 @@ class RegisterActivity : AppCompatActivity(){
     ) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         when(requestCode){
-            1001 -> {
+            Constants.REQ_CODE_1001 -> {
                 if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED){
                     chooseImageGallery()
                 } else {
@@ -98,14 +95,24 @@ class RegisterActivity : AppCompatActivity(){
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
-        if(requestCode == 100 && resultCode == Activity.RESULT_OK){
-            Log.d(TAG, "onresult Gallery ${data?.data}")
+        if(requestCode == Constants.REQ_CODE_100 && resultCode == Activity.RESULT_OK){
+            Glide
+                .with(this)
+                .load(data?.data)
+                .centerCrop()
+                .override(960, 1280)
+                .into(ivRegisterProfile)
+//            Log.d(TAG, "onresult Gallery ${data?.data}")
         }
-        if(requestCode == 102 && resultCode == Activity.RESULT_OK){
-            val sharedPreference =  getSharedPreferences("CAMERA_PREFERENCE", Context.MODE_PRIVATE)
-            Log.d(TAG, "onresult Camera ${sharedPreference.getString("image", null)}")
+        if(requestCode == Constants.REQ_CODE_102 && resultCode == Activity.RESULT_OK){
+            val sharedPreference =  getSharedPreferences(Constants.CAMERA_PREFERENCE, Context.MODE_PRIVATE)
+            Glide
+                .with(this)
+                .load(sharedPreference.getString(Constants.KEY_IMAGE, null)!!.toUri())
+                .centerCrop()
+                .override(960, 1280)
+                .into(ivRegisterProfile)
+//            Log.d(TAG, "onresult Camera ${sharedPreference.getString("image", null)}")
         }
     }
 }
-
-private const val TAG = "RegisterActivity"

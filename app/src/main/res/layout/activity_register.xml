@@ -73,15 +73,15 @@
 
                     <RelativeLayout
                         android:id="@+id/rlProfileWrapper"
-                        android:layout_width="100dp"
-                        android:layout_height="128dp"
+                        android:layout_width="99dp"
+                        android:layout_height="132dp"
                         android:background="@drawable/layout_border"
                         >
 
                         <ImageView
                             android:id="@+id/ivRegisterProfile"
                             android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
+                            android:layout_height="match_parent"
                             android:layout_centerInParent="true"
                             android:layout_gravity="center"
                             android:src="@drawable/ic_baseline_photo_camera_32" />
