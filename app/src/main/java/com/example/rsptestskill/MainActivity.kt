@@ -17,6 +17,7 @@ import com.example.rsptestskill.room.LoginStoryApplication
 import com.example.rsptestskill.room.LoginStoryViewModel
 import com.example.rsptestskill.room.LoginStoryViewModelFactory
 import com.example.rsptestskill.utils.Constants
+import com.example.rsptestskill.utils.HelperUtils
 import com.google.android.gms.location.*
 import kotlinx.android.synthetic.main.activity_main.*
 
@@ -44,7 +45,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun onEvent() {
-        checkPermission()
+        HelperUtils.checkPermission(this)
         initializeLocation()
         startLocationUpdates()
         getLocationUpdates()
@@ -58,51 +59,52 @@ class MainActivity : AppCompatActivity() {
         locationCallback = LocationCallback()
     }
 
-    private fun checkPermission() {
-        if (ActivityCompat.checkSelfPermission(
-                this,
-                Manifest.permission.ACCESS_FINE_LOCATION
-            ) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(
-                this,
-                Manifest.permission.ACCESS_COARSE_LOCATION
-            ) != PackageManager.PERMISSION_GRANTED
-        ) {
-            ActivityCompat.requestPermissions(
-                (this as Activity?)!!,
-                arrayOf(
-                    Manifest.permission.ACCESS_FINE_LOCATION,
-                    Manifest.permission.ACCESS_COARSE_LOCATION
-                ),
-                Constants.REQ_CODE_101
-            )
-        }
-    }
+
+
 
 
     private fun buttonEvent() {
         btnLogin.setOnClickListener {
             if (etLoginEmail.text.isBlank()) {
                 etLoginEmail.error = "Email tidak boleh kosong"
-            }
-            loginStoryViewModel.allLoginStory.observe(this) { loginStory ->
-                // Update the cached copy of the words in the adapter.
-                loginStory.map {
-                    listLoginStory.add(it)
+            } else {
+                loginStoryViewModel.allLoginStory.observe(this) { loginStory ->
+                    // Update the cached copy of the words in the adapter.
+                    loginStory.map {
+                        listLoginStory.add(it)
+                    }
                 }
+                var updatedLoginStory: LoginStory? = null
+                listLoginStory.filter {
+                    it.email == etLoginEmail.text.toString()
+                }.forEach {
+                    updatedLoginStory = LoginStory(it.id, it.email, it.username, it.loginCount + 1)
+                }
+                if(updatedLoginStory == null){
+                    Toast.makeText(
+                        this@MainActivity,
+                        "Tidak ada Database, Register untuk membuat database",
+                        Toast.LENGTH_SHORT)
+                        .show()
+                }else {
+                    if(updatedLoginStory!!.email.isBlank()){
+                        Toast.makeText(
+                            this@MainActivity,
+                            "Email belum terdaftar",
+                            Toast.LENGTH_SHORT)
+                            .show()
+                    } else {
+                        loginStoryViewModel.update(updatedLoginStory!!)
+                        Toast.makeText(
+                            this@MainActivity,
+                            "Anda telah login menggunakan ${updatedLoginStory!!.username} : ${updatedLoginStory!!.email}  sebanyak ${updatedLoginStory!!.loginCount}",
+                            Toast.LENGTH_SHORT)
+                            .show()
+                        listLoginStory.clear()
+                    }
+                }
+
             }
-            var updatedLoginStory: LoginStory? = null
-            listLoginStory.filter {
-                it.email == etLoginEmail.text.toString()
-            }.forEach {
-                updatedLoginStory = LoginStory(it.id, it.email, it.username, it.loginCount + 1)
-            }
-            loginStoryViewModel.update(updatedLoginStory!!)
-            Toast.makeText(
-                this@MainActivity,
-                "Anda telah login menggunakan ${updatedLoginStory!!.username} : ${updatedLoginStory!!.email}  sebanyak ${updatedLoginStory!!.loginCount}",
-                Toast.LENGTH_SHORT)
-                .show()
-            listLoginStory.clear()
         }
 
         btnRegister.setOnClickListener {
@@ -137,7 +139,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun startLocationUpdates() {
-        checkPermission()
+        HelperUtils.checkPermission(this)
         fusedLocationClient.requestLocationUpdates(
             locationRequest,
             locationCallback,

@@ -1,5 +1,6 @@
 package com.example.rsptestskill
 
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
@@ -16,11 +17,16 @@ import com.example.rsptestskill.room.LoginStoryApplication
 import com.example.rsptestskill.room.LoginStoryViewModel
 import com.example.rsptestskill.room.LoginStoryViewModelFactory
 import com.example.rsptestskill.utils.Constants
+import com.example.rsptestskill.utils.HelperUtils
+import com.google.android.gms.location.*
 import kotlinx.android.synthetic.main.activity_register.*
 
 
 class RegisterActivity : AppCompatActivity(){
 
+    private lateinit var fusedLocationClient: FusedLocationProviderClient
+    private lateinit var locationRequest: LocationRequest
+    private lateinit var locationCallback: LocationCallback
     private val loginStoryViewModel: LoginStoryViewModel by viewModels {
         LoginStoryViewModelFactory((application as LoginStoryApplication).repository)
     }
@@ -31,9 +37,24 @@ class RegisterActivity : AppCompatActivity(){
         setContentView(R.layout.activity_register)
 
 
-        onClickRegister()
+        onEvent()
     }
 
+
+    private fun onEvent(){
+        HelperUtils.checkPermission(this)
+        initializeLocation()
+        startLocationUpdates()
+        getLocationUpdates()
+        onClickRegister()
+        onClickLogin()
+    }
+
+    private fun onClickLogin(){
+        btnBackLogin.setOnClickListener {
+            finish()
+        }
+    }
     private fun onClickRegister(){
         btnRegisterApply.setOnClickListener {
             var isEmpty = false
@@ -91,6 +112,61 @@ class RegisterActivity : AppCompatActivity(){
         }
     }
 
+    private fun initializeLocation() {
+        fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
+        locationRequest = LocationRequest()
+        locationCallback = LocationCallback()
+    }
+    private fun startLocationUpdates() {
+        HelperUtils.checkPermission(this)
+        fusedLocationClient.requestLocationUpdates(
+            locationRequest,
+            locationCallback,
+            null /* Looper */
+        )
+    }
+
+    // stop location updates
+    private fun stopLocationUpdates() {
+        fusedLocationClient.removeLocationUpdates(locationCallback)
+    }
+
+    // stop receiving location update when activity not visible/foreground
+    override fun onPause() {
+        super.onPause()
+        stopLocationUpdates()
+    }
+
+    // start receiving location update when activity  visible/foreground
+    override fun onResume() {
+        super.onResume()
+        startLocationUpdates()
+    }
+    private fun getLocationUpdates() {
+        locationRequest.interval = 50000
+        locationRequest.fastestInterval = 50000
+        locationRequest.smallestDisplacement = 170f // 170 m = 0.1 mile
+        locationRequest.priority =
+            LocationRequest.PRIORITY_HIGH_ACCURACY //set according to your app function
+        locationCallback = object : LocationCallback() {
+            @SuppressLint("SetTextI18n")
+            override fun onLocationResult(locationResult: LocationResult?) {
+                locationResult ?: return
+
+                if (locationResult.locations.isNotEmpty()) {
+                    // get latest location
+                    val location =
+                        locationResult.lastLocation
+                    // use your location object
+                    // get latitude , longitude and other info from this
+                    tvLatitudeRegister.text = "Latitude : ${location.latitude}"
+                    tvLongitudeRegister.text = "Longitude : ${location.longitude}"
+                }
+
+
+            }
+        }
+    }
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
         if(requestCode == Constants.REQ_CODE_100 && resultCode == Activity.RESULT_OK){
