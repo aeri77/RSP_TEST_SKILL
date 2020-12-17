@@ -2,15 +2,20 @@ package com.example.rsptestskill
 
 import android.Manifest
 import android.app.Activity
-import android.content.ContentValues
-import android.content.Context
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Bundle
-import android.util.Log
+import android.widget.Toast
+import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
+import com.example.rsptestskill.room.LoginStory
+import com.example.rsptestskill.room.LoginStoryApplication
+import com.example.rsptestskill.room.LoginStoryViewModel
+import com.example.rsptestskill.room.LoginStoryViewModelFactory
 import com.google.android.gms.location.*
 import kotlinx.android.synthetic.main.activity_main.*
+
 
 
 private const val TAG = "MainActivity"
@@ -32,29 +37,29 @@ private lateinit var locationCallback: LocationCallback
  * onLocationResult call when location is changed
  */
 class   MainActivity : AppCompatActivity() {
+
+    private val loginStoryViewModel: LoginStoryViewModel by viewModels {
+        LoginStoryViewModelFactory((application as LoginStoryApplication).repository)
+    }
+
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
+        //uncomment for delete all inside table
+        // loginStoryViewModel.delete()
+
+        loginStoryViewModel.allLoginStory.observe(this) { loginStory ->
+            // Update the cached copy of the words in the adapter.
+//            loginStory.let { Log.d(TAG, "oncreate loginstory ${it[1]}") }
+        }
         //location initialize
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
         locationRequest = LocationRequest()
         locationCallback = LocationCallback()
         //
-        val database = baseContext.openOrCreateDatabase("login_story", Context.MODE_PRIVATE, null)
-        var sql = "CREATE TABLE IF NOT EXISTS login_story(_id INTEGER PRIMARY KEY NOT NULL, email TEXT, count_login INTEGER)"
-        Log.d(TAG, "onCreate: sql is $sql")
-        database.execSQL(sql)
-        sql = "INSERT INTO login_story(email, count_login) VALUES('tim@hisemail.com', 1)"
-        Log.d(TAG, "onCreate: sql is $sql")
-        database.execSQL(sql)
-        val values = ContentValues().apply {
-            put("email", "fred@nurk.com")
-            put("count_login", 12)
-        }
-        val generatedId = database.insert("login_story", null, values)
-        Log.d(TAG, "onCreate: record added with id $generatedId")
-        //
+
 //
         if (ActivityCompat.checkSelfPermission(
                 this,
@@ -76,7 +81,29 @@ class   MainActivity : AppCompatActivity() {
 //
         startLocationUpdates()
         getLocationUpdates()
-
+        btnLogin.setOnClickListener {
+            val listLoginStory = ArrayList<LoginStory>()
+            if(etLoginEmail.text.isBlank()){
+                Toast.makeText(this,"Email kosong", Toast.LENGTH_LONG).show()
+            }else{
+                loginStoryViewModel.allLoginStory.observe(this) { loginStory ->
+                    // Update the cached copy of the words in the adapter.
+                    loginStory.map {
+                        listLoginStory.add(it)
+                    }
+                    loginStory.let {
+                    }
+                }
+                listLoginStory.map {
+                    if(it.email == etLoginEmail.text.toString()){
+                        loginStoryViewModel.update(LoginStory(it.id, it.email, it.username, it.loginCount + 1))
+                    }
+                }
+            }
+        }
+        btnRegister.setOnClickListener {
+            startActivity(Intent(this, RegisterActivity::class.java))
+        }
     }
 
     private fun getLocationUpdates()
@@ -144,5 +171,9 @@ class   MainActivity : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
         startLocationUpdates()
+    }
+
+    fun getLocationPermissions(){
+
     }
 }
