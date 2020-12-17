@@ -2,6 +2,7 @@ package com.example.rsptestskill
 
 import android.Manifest
 import android.app.Activity
+import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.BitmapFactory
@@ -97,11 +98,12 @@ class RegisterActivity : AppCompatActivity(){
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
-        if(requestCode == 101 && resultCode == Activity.RESULT_OK){
+        if(requestCode == 100 && resultCode == Activity.RESULT_OK){
             Log.d(TAG, "onresult Gallery ${data?.data}")
         }
         if(requestCode == 102 && resultCode == Activity.RESULT_OK){
-            Log.d(TAG, "onresult Gallery ${BitmapFactory.decodeFile(data?.data.toString())}")
+            val sharedPreference =  getSharedPreferences("CAMERA_PREFERENCE", Context.MODE_PRIVATE)
+            Log.d(TAG, "onresult Camera ${sharedPreference.getString("image", null)}")
         }
     }
 }
